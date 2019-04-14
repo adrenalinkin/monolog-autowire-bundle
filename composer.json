@@ -1,0 +1,41 @@
+{
+    "name":        "adrenalinkin/monolog-autowire-bundle",
+    "description": "Provides autowiring for the loggers registered by symfony/monolog-bundle",
+    "type":        "symfony-bundle",
+    "license":     "MIT",
+    "keywords":    [
+        "symfony-bundle",
+        "monolog",
+        "log",
+        "logger",
+        "logging",
+        "null-logger"
+    ],
+
+    "authors": [
+        {
+            "email": "adrenalinkin@gmail.com",
+            "name":  "Viktor Linkin",
+            "role":  "Developer"
+        }
+    ],
+
+    "require": {
+        "php":                          "~7.1",
+        "psr/log":                      "^1.0",
+        "symfony/config":               "^3.4||^4.0",
+        "symfony/dependency-injection": "^3.4||^4.0",
+        "symfony/http-kernel":          "^3.4||^4.0"
+    },
+
+    "suggest": {
+        "symfony/monolog-bundle":   "Install and enable bundle to activate main functionality of the current bundle",
+        "symfony/symfony":          "Allows more advanced functionality with full Symfony package"
+    },
+
+    "autoload": {
+        "psr-4": {
+            "Linkin\\Bundle\\MonologAutowireBundle\\": ""
+        }
+    }
+}

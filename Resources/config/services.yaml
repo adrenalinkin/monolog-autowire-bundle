@@ -1,0 +1,6 @@
+services:
+    Linkin\Bundle\MonologAutowireBundle\Handler\LoggerHandler:
+        public: true
+        arguments:
+            - [] # loggers
+            - '@?Psr\Log\LoggerInterface'
