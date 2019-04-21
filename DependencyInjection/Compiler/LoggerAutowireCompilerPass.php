@@ -13,9 +13,11 @@ declare(strict_types=1);
 
 namespace Linkin\Bundle\MonologAutowireBundle\DependencyInjection\Compiler;
 
-use Linkin\Bundle\MonologAutowireBundle\Handler\LoggerHandler;
+use Linkin\Bundle\MonologAutowireBundle\Cache\LoggerClassCache;
+use Linkin\Bundle\MonologAutowireBundle\Collection\LoggerCollection;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Reference;
 use function str_replace;
 use function strpos;
 
@@ -29,11 +31,14 @@ class LoggerAutowireCompilerPass implements CompilerPassInterface
      */
     public function process(ContainerBuilder $container): void
     {
-        if (!$container->hasDefinition(LoggerHandler::class)) {
+        if (!$container->hasDefinition(LoggerCollection::class)) {
             return;
         }
 
         $loggerChannels = [];
+
+        $loggerCache = new LoggerClassCache();
+        $loggerCache->clear();
 
         foreach ($container->getDefinitions() as $id => $definition) {
             if (strpos($id, 'monolog.logger.') !== 0) {
@@ -43,8 +48,12 @@ class LoggerAutowireCompilerPass implements CompilerPassInterface
             $channelName = str_replace('monolog.logger.', '', $id);
 
             $loggerChannels[$channelName] = $definition;
+
+            $loggerFullClassName = $loggerCache->generateClass($channelName);
+
+            $container->register($loggerFullClassName, $loggerFullClassName)->addArgument(new Reference($id));
         }
 
-        $container->getDefinition(LoggerHandler::class)->replaceArgument(0, $loggerChannels);
+        $container->getDefinition(LoggerCollection::class)->replaceArgument(0, $loggerChannels);
     }
 }

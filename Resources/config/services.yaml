@@ -1,5 +1,5 @@
 services:
-    Linkin\Bundle\MonologAutowireBundle\Handler\LoggerHandler:
+    Linkin\Bundle\MonologAutowireBundle\Collection\LoggerCollection:
         public: true
         arguments:
             - [] # loggers
