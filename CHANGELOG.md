@@ -1,4 +1,4 @@
-## [Unreleased]
+## [2.0.0] - 2019-04-22
 ### Added
 - Added logger classes generation for autowire by Fully Qualified Class Name.
 ### Changed
