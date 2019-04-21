@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Linkin\Bundle\MonologAutowireBundle\DependencyInjection\Compiler;
 
 use Linkin\Bundle\MonologAutowireBundle\Cache\LoggerClassCache;
-use Linkin\Bundle\MonologAutowireBundle\Handler\LoggerHandler;
+use Linkin\Bundle\MonologAutowireBundle\Collection\LoggerCollection;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
@@ -31,7 +31,7 @@ class LoggerAutowireCompilerPass implements CompilerPassInterface
      */
     public function process(ContainerBuilder $container): void
     {
-        if (!$container->hasDefinition(LoggerHandler::class)) {
+        if (!$container->hasDefinition(LoggerCollection::class)) {
             return;
         }
 
@@ -54,6 +54,6 @@ class LoggerAutowireCompilerPass implements CompilerPassInterface
             $container->register($loggerFullClassName, $loggerFullClassName)->addArgument(new Reference($id));
         }
 
-        $container->getDefinition(LoggerHandler::class)->replaceArgument(0, $loggerChannels);
+        $container->getDefinition(LoggerCollection::class)->replaceArgument(0, $loggerChannels);
     }
 }

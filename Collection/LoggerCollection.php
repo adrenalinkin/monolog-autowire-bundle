@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Linkin\Bundle\MonologAutowireBundle\Handler;
+namespace Linkin\Bundle\MonologAutowireBundle\Collection;
 
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -19,7 +19,7 @@ use Psr\Log\NullLogger;
 /**
  * @author Viktor Linkin <adrenalinkin@gmail.com>
  */
-class LoggerHandler
+class LoggerCollection
 {
     /**
      * @var LoggerInterface

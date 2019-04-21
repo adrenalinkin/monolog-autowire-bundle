@@ -14,13 +14,13 @@ Monolog Autowire Bundle [![In English](https://img.shields.io/badge/Switch_To-En
 Цель достигается благодаря автогенерируемым классам логгеров. Каждый класс декорирует один объект одного
 зарегистрированного `monolog` канала.
 
-Также доступен второй способ достижения цели - при помощи управляющего класса `LoggerHandler`.
+Также доступен второй способ достижения цели - при помощи управляющего класса `LoggerCollection`.
 В случае если запрашиваемого канала не существует - будет выбран запасной `logger`. 
 В качестве запасного `logger` будет использован сервис, на который ссылается `@Psr\Log\LoggerInterface`. 
 Если запасной `logger` не зарегистрирован в контейнере сервисов, то будет возвращен экземпляр `Psr\Log\NullLogger`.
 
 **Важно:** Бандл будет исправно работать при отсутствии `MonologBundle` в проекте. 
-В этом случае `LoggerHandler` будет всегда возвращать запасное значение.
+В этом случае `LoggerCollection` будет всегда возвращать запасное значение.
 
 Установка
 ---------
@@ -142,33 +142,46 @@ class AcmeLoggerAware
 }
 ```
 
-### Использование через LoggerHandler
+### Использование через коллекцию логгеров
 
 ```php
 <?php declare(strict_types=1);
 
-use Linkin\Bundle\MonologAutowireBundle\Handler\LoggerHandler;
+use Linkin\Bundle\MonologAutowireBundle\Collection\LoggerCollection;
+use Psr\Log\LoggerInterface;
 
 class AcmeLoggerAware
 {
     /**
-     * @var LoggerHandler
+     * @var LoggerInterface
      */
-    private $loggerHandler;
+    private $acmeLogLogger;
 
     /**
-     * @param LoggerHandler $loggerHandler
+     * @var LoggerInterface
      */
-    public function __construct(LoggerHandler $loggerHandler) 
+    private $doctrineLogger;
+
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
+     * @param LoggerCollection $loggerCollection
+     */
+    public function __construct(LoggerCollection $loggerCollection) 
     {
-        $this->loggerHandler = $loggerHandler;
+        $this->acmeLogLogger = $loggerCollection->getLogger('acme_log');
+        $this->doctrineLogger = $loggerCollection->getLogger('doctrine');
+        $this->logger = $loggerCollection->getLogger();
     }
     
     public function doSome(): void
     {
-        $this->loggerHandler->getLogger('acme_log')->info('INFO into "acme_log" channel');
-        $this->loggerHandler->getLogger('doctrine')->info('INFO into "doctrine" channel');
-        $this->loggerHandler->getLogger()->info('INFO into Fallback or into NullLogger');
+        $this->acmeLogLogger->info('INFO into "acme_log" channel');
+        $this->doctrineLogger->info('INFO into "doctrine" channel');
+        $this->logger->info('INFO into Fallback or into NullLogger');
     }
 }
 ```
