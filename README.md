@@ -9,7 +9,11 @@ Monolog Autowire Bundle [![На Русском](https://img.shields.io/badge/П�
 Introduction
 ------------
 
-The bundle provides access to all channels registered in `MonologBundle` via` LoggerHandler`.
+Bundle provides the ability to connect loggers registered in `MonologBundle` through the standard `autowire` mechanism.
+The goal is achieved thanks to auto-generated classes of loggers. Each class decorates one object of one
+of the registered `monolog` channel.
+
+Also available is the second way to achieve the goal - using the control class `LoggerHandler`.
 If the requested channel does not exist - will be selected fallback `logger`.
 As fallback `logger`  will be used service, which referenced by `@Psr\Log\LoggerInterface`.
 In that case where `logger` was not registered in service container will be returned instance of `Psr\Log\NullLogger`.
@@ -84,7 +88,60 @@ monolog:
                 - "acme_channel"
 ```
 
-Access to the required logging channels using the `autowire` mechanism is now available via `LoggerHandler`:
+### Use through auto-generated loggers
+
+Class names are generated based on the channel name. All non-alphanumeric values are deleted,
+and the name is converted to the format of `CamelCase`. All classes begin with `Channel` and end with` Logger`.
+
+```php
+<?php declare(strict_types=1);
+
+use Linkin\Bundle\MonologAutowireBundle\Logger\ChannelAcmeLogLogger;
+use Linkin\Bundle\MonologAutowireBundle\Logger\ChannelDoctrineLogger;
+use Psr\Log\LoggerInterface;
+
+class AcmeLoggerAware
+{
+    /**
+     * @var ChannelDoctrineLogger
+     */
+    private $acmeLogLogger;
+
+    /**
+     * @var ChannelDoctrineLogger
+     */
+    private $doctrineLogger;
+
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
+     * @param ChannelAcmeLogLogger $acmeLogLogger
+     * @param ChannelDoctrineLogger $doctrineLogger
+     * @param LoggerInterface $logger
+     */
+    public function __construct(
+        ChannelAcmeLogLogger $acmeLogLogger,
+        ChannelDoctrineLogger $doctrineLogger,
+        LoggerInterface $logger
+    ) {
+        $this->acmeLogLogger = $acmeLogLogger;
+        $this->doctrineLogger = $doctrineLogger;
+        $this->logger = $logger;
+    }
+    
+    public function doSome(): void
+    {
+        $this->acmeLogLogger->info('INFO into "acme_log" channel');
+        $this->doctrineLogger->info('INFO into "doctrine" channel');
+        $this->logger->info('INFO into Fallback or into NullLogger');
+    }
+}
+```
+
+### Use through LoggerHandler
 
 ```php
 <?php declare(strict_types=1);
@@ -108,7 +165,7 @@ class AcmeLoggerAware
     
     public function doSome(): void
     {
-        $this->loggerHandler->getLogger('acme_channel')->info('INFO into "acme_channel" channel');
+        $this->loggerHandler->getLogger('acme_log')->info('INFO into "acme_log" channel');
         $this->loggerHandler->getLogger('doctrine')->info('INFO into "doctrine" channel');
         $this->loggerHandler->getLogger()->info('INFO into Fallback or into NullLogger');
     }
