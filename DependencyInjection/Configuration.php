@@ -22,12 +22,35 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
 class Configuration implements ConfigurationInterface
 {
     /**
+     * @var string
+     */
+    private $projectDir;
+
+    /**
+     * @param string $projectDir
+     */
+    public function __construct(string $projectDir)
+    {
+        $this->projectDir = $projectDir;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder();
-        $treeBuilder->root('linkin_monolog_autowire');
+        $rootNode = $treeBuilder->root('linkin_monolog_autowire');
+
+        $rootNode
+            ->children()
+                ->scalarNode('loggers_dir')
+                    ->info('Directory where should be stored auto-generated loggers decorators')
+                    ->cannotBeEmpty()
+                    ->defaultValue($this->projectDir . '/var/loggers')
+                ->end()
+            ->end()
+        ;
 
         return $treeBuilder;
     }

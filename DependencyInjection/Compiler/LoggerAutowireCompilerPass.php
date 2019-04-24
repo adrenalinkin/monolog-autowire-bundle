@@ -35,9 +35,11 @@ class LoggerAutowireCompilerPass implements CompilerPassInterface
             return;
         }
 
+        $loggersDir = $container->getParameter('linkin_monolog_autowire.loggers_dir');
+
         $loggerChannels = [];
 
-        $loggerCache = new LoggerClassCache();
+        $loggerCache = new LoggerClassCache($loggersDir);
         $loggerCache->clear();
 
         foreach ($container->getDefinitions() as $id => $definition) {

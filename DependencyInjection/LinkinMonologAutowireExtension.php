@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Linkin\Bundle\MonologAutowireBundle\DependencyInjection;
 
+use Linkin\Bundle\MonologAutowireBundle\Cache\LoggerClassCache;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader;
@@ -28,8 +29,16 @@ class LinkinMonologAutowireExtension extends Extension
      */
     public function load(array $configs, ContainerBuilder $container): void
     {
-        $configuration = new Configuration();
-        $this->processConfiguration($configuration, $configs);
+        $projectDir = $container->getParameter('kernel.project_dir');
+
+        $configuration = new Configuration($projectDir);
+        $config = $this->processConfiguration($configuration, $configs);
+
+        $loggerDir = $config['loggers_dir'];
+
+        $container->setParameter('linkin_monolog_autowire.loggers_dir', $loggerDir);
+
+        LoggerClassCache::register($loggerDir);
 
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yaml');
