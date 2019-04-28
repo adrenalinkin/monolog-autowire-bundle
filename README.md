@@ -64,6 +64,12 @@ Configuration
 ------------
 
 To start using bundle you don't need to define some additional configuration.
+All parameters has values by default:
+
+```yaml
+linkin_monolog_autowire:
+    loggers_dir: '%kernel.project_dir%/var/loggers' # directory where should be stored auto-generated loggers decorators
+```
 
 Usage
 -----

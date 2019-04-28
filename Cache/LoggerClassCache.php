@@ -13,11 +13,18 @@ declare(strict_types=1);
 
 namespace Linkin\Bundle\MonologAutowireBundle\Cache;
 
+use Closure;
 use SplFileInfo;
 use Symfony\Component\Finder\Finder;
+use function end;
+use function explode;
+use function file_exists;
 use function file_get_contents;
 use function file_put_contents;
+use function is_dir;
+use function mkdir;
 use function preg_replace;
+use function spl_autoload_register;
 use function sprintf;
 use function str_replace;
 use function ucfirst;
@@ -29,7 +36,14 @@ use function unlink;
  */
 class LoggerClassCache
 {
-    private const PATH_TO_LOGGER = __DIR__ . '/../Logger';
+    private const LOGGER_CLASS_POSTFIX = 'Logger';
+    private const LOGGER_CLASS_PREFIX = 'Channel';
+    private const LOGGER_NAMESPACE = 'Linkin\\Bundle\\MonologAutowireBundle\\Logger';
+
+    /**
+     * @var string
+     */
+    private $loggersDir;
 
     /**
      * @var string
@@ -37,16 +51,20 @@ class LoggerClassCache
     private $loggerTemplate;
 
     /**
+     * @param string $loggersDir
+     */
+    public function __construct(string $loggersDir)
+    {
+        $this->loggersDir = $loggersDir;
+    }
+
+    /**
      * Remove all already exist logger classes
      */
     public function clear(): void
     {
         $finder = new Finder();
-        $finder
-            ->files()
-            ->in(self::PATH_TO_LOGGER)
-            ->name('*.php')
-        ;
+        $finder->files()->in($this->getLoggerDir())->name('*.php');
 
         foreach ($finder as $file) {
             if ($file instanceof SplFileInfo) {
@@ -65,11 +83,47 @@ class LoggerClassCache
     public function generateClass(string $channelName): string
     {
         $loggerClassName = $this->generateClassNameByChannel($channelName);
-        $loggerClassContent = sprintf($this->getLoggerTemplate(), $loggerClassName);
+        $loggerClassContent = sprintf($this->getLoggerTemplate(), self::LOGGER_NAMESPACE, $loggerClassName);
 
-        file_put_contents(sprintf('%s/%s.php', self::PATH_TO_LOGGER, $loggerClassName), $loggerClassContent);
+        file_put_contents(sprintf('%s/%s.php', $this->getLoggerDir(), $loggerClassName), $loggerClassContent);
 
-        return 'Linkin\\Bundle\\MonologAutowireBundle\\Logger\\' . $loggerClassName;
+        return self::LOGGER_NAMESPACE . '\\' . $loggerClassName;
+    }
+
+    /**
+     * @param string $loggersDir
+     *
+     * @return Closure
+     */
+    public static function register(string $loggersDir): Closure
+    {
+        $closure = function ($className) use ($loggersDir) {
+            $explodedClassName = explode('\\', $className);
+            $fileName = end($explodedClassName);
+            $absolutePath = sprintf('%s/%s.php', $loggersDir, $fileName);
+
+            if (!file_exists($absolutePath)) {
+                return;
+            }
+
+            require $absolutePath;
+        };
+
+        spl_autoload_register($closure);
+
+        return $closure;
+    }
+
+    /**
+     * @return string
+     */
+    private function getLoggerDir(): string
+    {
+        if (!is_dir($this->loggersDir)) {
+            mkdir($this->loggersDir, 0777, true);
+        }
+
+        return $this->loggersDir;
     }
 
     /**
@@ -78,7 +132,7 @@ class LoggerClassCache
     private function getLoggerTemplate(): string
     {
         if (!$this->loggerTemplate) {
-            $this->loggerTemplate = file_get_contents(self::PATH_TO_LOGGER . '/LoggerTemplate.php.txt');
+            $this->loggerTemplate = file_get_contents(__DIR__ . '/ChannelLogger.php.dist');
         }
 
         return $this->loggerTemplate;
@@ -95,6 +149,6 @@ class LoggerClassCache
         $upperCaseWithSpaceInsteadSymbols = ucwords($spaceInsteadSymbols);
         $concatenatedString = str_replace(' ', '', $upperCaseWithSpaceInsteadSymbols);
 
-        return sprintf('Channel%sLogger', ucfirst($concatenatedString));
+        return self::LOGGER_CLASS_PREFIX . ucfirst($concatenatedString) . self::LOGGER_CLASS_POSTFIX;
     }
 }
