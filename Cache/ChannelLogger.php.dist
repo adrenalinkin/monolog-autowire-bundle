@@ -11,14 +11,14 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace %s;
+namespace __LINKIN_CHANNEL_LOGGER_NAMESPACE__;
 
 use Psr\Log\LoggerInterface;
 
 /**
  * @author Viktor Linkin <adrenalinkin@gmail.com>
  */
-class %s implements LoggerInterface
+class __LINKIN_CHANNEL_LOGGER_CLASS_NAME__ implements LoggerInterface
 {
     /**
      * @var LoggerInterface

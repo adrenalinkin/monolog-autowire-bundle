@@ -69,7 +69,10 @@ class AppKernel extends Kernel
 
 ```yaml
 linkin_monolog_autowire:
-    loggers_dir: '%kernel.project_dir%/var/loggers' # директория где будут созданы классы-декораторы логгеров
+    # директория где будут созданы классы-декораторы логгеров
+    loggers_dir:        '%kernel.project_dir%/var/loggers'
+    # путь к файлу шаблона декоратора
+    decorator_template: 'ChannelLogger.php.dist'
 ```
 
 Использование

@@ -1,5 +1,6 @@
 ## [Unreleased]
 ### Added
+- Added configuration parameter `linkin_monolog_autowire.decorator_template` to customize logger decorator.
 - Added configuration parameter `linkin_monolog_autowire.loggers_dir` to locate auto-generated logger decorators.
 
 ## [2.0.0] - 2019-04-22
