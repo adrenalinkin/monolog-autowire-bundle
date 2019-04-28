@@ -36,6 +36,7 @@ class LinkinMonologAutowireExtension extends Extension
 
         $loggerDir = $config['loggers_dir'];
 
+        $container->setParameter('linkin_monolog_autowire.decorator_template', $config['decorator_template']);
         $container->setParameter('linkin_monolog_autowire.loggers_dir', $loggerDir);
 
         LoggerClassCache::register($loggerDir);

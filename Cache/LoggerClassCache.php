@@ -36,6 +36,9 @@ use function unlink;
  */
 class LoggerClassCache
 {
+    public const LOGGER_PLACEHOLDER_CLASS_NAME = '__LINKIN_CHANNEL_LOGGER_CLASS_NAME__';
+    public const LOGGER_PLACEHOLDER_NAMESPACE = '__LINKIN_CHANNEL_LOGGER_NAMESPACE__';
+
     private const LOGGER_CLASS_POSTFIX = 'Logger';
     private const LOGGER_CLASS_PREFIX = 'Channel';
     private const LOGGER_NAMESPACE = 'Linkin\\Bundle\\MonologAutowireBundle\\Logger';
@@ -52,10 +55,12 @@ class LoggerClassCache
 
     /**
      * @param string $loggersDir
+     * @param string $loggerTemplate
      */
-    public function __construct(string $loggersDir)
+    public function __construct(string $loggersDir, string $loggerTemplate)
     {
         $this->loggersDir = $loggersDir;
+        $this->loggerTemplate = file_get_contents($loggerTemplate);
     }
 
     /**
@@ -83,7 +88,11 @@ class LoggerClassCache
     public function generateClass(string $channelName): string
     {
         $loggerClassName = $this->generateClassNameByChannel($channelName);
-        $loggerClassContent = sprintf($this->getLoggerTemplate(), self::LOGGER_NAMESPACE, $loggerClassName);
+        $loggerClassContent = str_replace(
+            [self::LOGGER_PLACEHOLDER_CLASS_NAME, self::LOGGER_PLACEHOLDER_NAMESPACE],
+            [$loggerClassName, self::LOGGER_NAMESPACE],
+            $this->loggerTemplate
+        );
 
         file_put_contents(sprintf('%s/%s.php', $this->getLoggerDir(), $loggerClassName), $loggerClassContent);
 
@@ -124,18 +133,6 @@ class LoggerClassCache
         }
 
         return $this->loggersDir;
-    }
-
-    /**
-     * @return string
-     */
-    private function getLoggerTemplate(): string
-    {
-        if (!$this->loggerTemplate) {
-            $this->loggerTemplate = file_get_contents(__DIR__ . '/ChannelLogger.php.dist');
-        }
-
-        return $this->loggerTemplate;
     }
 
     /**

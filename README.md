@@ -68,7 +68,10 @@ All parameters has values by default:
 
 ```yaml
 linkin_monolog_autowire:
-    loggers_dir: '%kernel.project_dir%/var/loggers' # directory where should be stored auto-generated loggers decorators
+    # directory where should be stored auto-generated loggers decorators
+    loggers_dir:        '%kernel.project_dir%/var/loggers'
+    # path to loggers decorator template
+    decorator_template: 'ChannelLogger.php.dist'
 ```
 
 Usage
