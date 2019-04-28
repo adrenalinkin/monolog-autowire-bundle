@@ -37,7 +37,7 @@ class LinkinMonologAutowireBundle extends Bundle
     {
         parent::build($container);
 
-        $container->addCompilerPass(new LoggerAutowireCompilerPass(), PassConfig::TYPE_BEFORE_OPTIMIZATION, -10);
+        $container->addCompilerPass(new LoggerAutowireCompilerPass(), PassConfig::TYPE_BEFORE_OPTIMIZATION, 255);
     }
 
     public function boot()

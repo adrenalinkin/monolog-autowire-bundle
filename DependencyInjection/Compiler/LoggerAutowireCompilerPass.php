@@ -18,8 +18,6 @@ use Linkin\Bundle\MonologAutowireBundle\Collection\LoggerCollection;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
-use function str_replace;
-use function strpos;
 
 /**
  * @author Viktor Linkin <adrenalinkin@gmail.com>
@@ -37,25 +35,42 @@ class LoggerAutowireCompilerPass implements CompilerPassInterface
 
         $loggersDir = $container->getParameter('linkin_monolog_autowire.loggers_dir');
 
-        $loggerChannels = [];
-
         $loggerCache = new LoggerClassCache($loggersDir);
         $loggerCache->clear();
 
-        foreach ($container->getDefinitions() as $id => $definition) {
-            if (strpos($id, 'monolog.logger.') !== 0) {
-                continue;
+        $loggerChannels = [];
+
+        foreach ($container->findTaggedServiceIds('monolog.logger') as $id => $tags) {
+            foreach ($tags as $tag) {
+                if (empty($tag['channel'])) {
+                    continue;
+                }
+
+                $resolvedChannel = $container->getParameterBag()->resolveValue($tag['channel']);
+
+                $loggerChannels[$resolvedChannel] = $this->getLoggerReference($resolvedChannel);
             }
+        }
 
-            $channelName = str_replace('monolog.logger.', '', $id);
+        foreach ($container->getParameter('monolog.additional_channels') as $channelName) {
+            $loggerChannels[$channelName] = $this->getLoggerReference($channelName);
+        }
 
-            $loggerChannels[$channelName] = $definition;
-
+        foreach ($loggerChannels as $channelName => $serviceReference) {
             $loggerFullClassName = $loggerCache->generateClass($channelName);
-
-            $container->register($loggerFullClassName, $loggerFullClassName)->addArgument(new Reference($id));
+            $container->register($loggerFullClassName, $loggerFullClassName)->addArgument($serviceReference);
         }
 
         $container->getDefinition(LoggerCollection::class)->replaceArgument(0, $loggerChannels);
+    }
+
+    /**
+     * @param string $channelName
+     *
+     * @return Reference
+     */
+    private function getLoggerReference(string $channelName): Reference
+    {
+        return new Reference('monolog.logger.' . $channelName);
     }
 }
